@@ -1,34 +1,37 @@
 import './App.css'
-import Discover from './components/discover'
 import { useState } from 'react';
+const api_key = import.meta.env.VITE_APP_ACCESS_KEY;
 
 function App() {
   const [dogImage, setDogImage] = useState(null);
-  const [dogAttributes, setDogAttributes] = useState([]);
+  const [dogBreeds, setDogBreeds] = useState([]);
   const [banList, setBanList] = useState([]);
 
-  const url = `https://api.thecatapi.com/v1/images/search?limit=20`;
-  const api_key = "live_KOqYts7oMCCYehe4AEIRxk1f68mYCK18KYOKjHOFD505NdNjAiYkdWMaccsDvyE7"
+  const displayedKeys = ['name', 'life_span', 'breed_group', 'origin', 'weight'];
+
+  const url = `https://api.thedogapi.com/v1/images/search?limit=1&has_breeds=1`;
 
   const handleDiscoverClick = async () => {
     try {
-      const response = await fetch('https://api.thedogapi.com/v1/images/search');
+      const response = await fetch(url, {
+        headers: {
+          'x-api-key': api_key
+        }
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch dog image');
       }
       const data = await response.json();
       setDogImage(data[0].url);
-      const attributes = Object.entries(data[0]);
-      setDogAttributes(attributes);
+      setDogBreeds(data[0].breeds);
+      console.log(data[0].breeds);
     } catch (error) {
       console.error(error);
-      // Handle error
     }
   };
 
-  const handleAttributeClick = (attribute) => {
-    // Add attribute to the list
-    setBanList([...banList, attribute]);
+  const handleBreedAttributeClick = (key, value) => {
+    setBanList([...banList, { [key]: value }]);
   };
 
   return (
@@ -38,11 +41,18 @@ function App() {
           <div className='veni_card'>
             <h1>Veni Vici!</h1>
             <p>Discover dogs from your wildest dreams!</p>
-            <Discover />
-            {dogAttributes.map(([attribute, value]) => (
-              <button key={attribute} onClick={() => handleAttributeClick({ [attribute]: value })}>
-                {`${attribute}: ${value}`}
-              </button>
+            {dogBreeds.map((breed, index) => (
+              <div key={index}>
+                {Object.entries(breed)
+                  .filter(([key, _]) => displayedKeys.includes(key))
+                  .map(([key, value]) => (
+                    <button key={key} onClick={() => handleBreedAttributeClick(key, value)}>
+                      {key === 'weight' && typeof value === 'object' // Check if key is 'weight' and value is an object
+                        ? `${value.imperial} lbs` // If yes, display 'imperial' value and append 'lbs'
+                        : `${value}`}
+                    </button>
+                  ))}
+              </div>
             ))}
             {dogImage && <img src={dogImage} alt='Random Dog' />}
             <button onClick={handleDiscoverClick}>Discover!</button>
@@ -50,11 +60,15 @@ function App() {
         </div>
         <div className='ban_container'>
           <h3>Ban List</h3>
-          <p>Select an attribute in your listing to ban it</p>
-          {banList.map((item, index) => (
+          <p>Select attributes in your listing to ban it</p>
+          {banList.map((breed, index) => (
             <div key={index}>
-              {Object.entries(item).map(([key, value]) => (
-                <p key={key}>{`${key}: ${value}`}</p>
+              {Object.entries(breed).map(([key, value], i) => (
+                <p key={i}>
+                  {key === 'weight' && typeof value === 'object' // Check if key is 'weight' and value is an object
+                    ? `${value.imperial} lbs` // If yes, display 'imperial' value and append 'lbs'
+                    : `${value}`}
+                </p>
               ))}
             </div>
           ))}
@@ -64,4 +78,4 @@ function App() {
   )
 }
 
-export default App
+export default App;

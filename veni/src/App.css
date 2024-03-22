@@ -20,7 +20,7 @@
 .veni_card {
   background-color: #1a1a1a;
   margin: 20px;
-  padding: 20px;
+  padding: 25px;
   border-radius: 15px;
   display: flex;
   flex-direction: column;
@@ -30,7 +30,7 @@
 
 .veni_card img {
   object-fit: cover;
-  border-radius: 15%;
+  border-radius: 2%;
   height: 30vh;
   width: 40vw;
   margin: 10px;
